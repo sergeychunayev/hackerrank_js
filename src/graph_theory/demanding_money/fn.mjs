@@ -17,24 +17,23 @@ export default (money, roads) => {
   // console.log(g);
 
   const getKey = items => {
-    let mask = 0;
+    let mask = 0n;
     for (const v of items) {
-      mask |= 1 << v;
+      mask |= 1n << BigInt(v);
     }
     return mask;
   };
 
   const cache = new Map();
 
-  const f = (unvisited) => {
+  const f = unvisited => {
     if (unvisited.size === 0) {
       return [0, 1];
     }
     const key = getKey(unvisited);
     let result = cache.get(key);
     if (!result) {
-      // const u = unvisited.values().next().value;
-      const u = Array.from(unvisited).reduce((r, v) => Math.min(r, v), Infinity);
+      const u = unvisited.values().next().value;
       unvisited.delete(u);
       const adj = g[u] || [];
       const nextUnvisited = [];
