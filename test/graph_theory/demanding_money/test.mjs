@@ -1,5 +1,5 @@
 import chai from 'chai';
-import fn from '../../../src/graph_theory/demanding_money/fn.mjs';
+import fn from '../../../src/graph_theory/demanding_money/index.mjs';
 
 const assert = chai.assert;
 
