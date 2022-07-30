@@ -49,14 +49,6 @@ function demandingMoney(money, roads) {
   }
   // console.log(g);
 
-  const getKey = items => {
-    let key = 0n;
-    for (const v of items) {
-      key |= 1n << BigInt(v);
-    }
-    return key;
-  };
-
   const cache = new Map();
 
   const f = unvisitedBits => {
@@ -99,11 +91,8 @@ function demandingMoney(money, roads) {
     }
     return result;
   };
-  const unvisited = new Set();
-  for (let i = 0; i < N; i++) {
-    unvisited.add(i);
-  }
-  const unvisitedKey = getKey(unvisited);
+
+  const unvisitedKey = (1n << BigInt(N)) - 1n;
   const result = f(unvisitedKey);
   return result;
 }
