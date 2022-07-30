@@ -1,3 +1,5 @@
+'use strict';
+
 export default (money, roads) => {
   const N = money.length;
   const connect = (g, u, v) => {
@@ -17,50 +19,52 @@ export default (money, roads) => {
   // console.log(g);
 
   const getKey = items => {
-    let mask = 0n;
+    let key = 0n;
     for (const v of items) {
-      mask |= 1n << BigInt(v);
+      key |= 1n << BigInt(v);
     }
-    return mask;
+    return key;
   };
 
   const cache = new Map();
 
-  const f = unvisited => {
-    if (unvisited.size === 0) {
+  const f = unvisitedBits => {
+    if (unvisitedBits === 0n) {
       return [0, 1];
     }
-    const key = getKey(unvisited);
-    let result = cache.get(key);
+    let result = cache.get(unvisitedBits);
     if (!result) {
-      const u = unvisited.values().next().value;
-      unvisited.delete(u);
+      let u = 0n;
+      for (; u < BigInt(N) && (unvisitedBits & 1n << u) === 0n; u++);
+      unvisitedBits ^= 1n << u;
       const adj = g[u] || [];
-      const nextUnvisited = [];
+      let nextUnvisited = 0n;
       for (const v of adj) {
-        if (unvisited.has(v)) {
-          unvisited.delete(v);
-          nextUnvisited.push(v);
+        if ((unvisitedBits & 1n << BigInt(v)) > 0n) {
+          unvisitedBits ^= 1n << BigInt(v)
+          nextUnvisited |= 1n << BigInt(v);
         }
       }
-      const [currentSum, count] = f(unvisited);
+      const [currentSum, count] = f(unvisitedBits);
       const sum = money[u] + currentSum;
 
-      for (const v of nextUnvisited) {
-        unvisited.add(v);
+      for (let i = 0n; 1n << i <= nextUnvisited; i++) {
+        if ((nextUnvisited & 1n << i) > 0n) {
+          unvisitedBits |= 1n << i;
+        }
       }
-      const [alternativeSum, aleternativeCount] = f(unvisited);
+      const [alternativeSum, alternativeCount] = f(unvisitedBits);
 
       if (sum > alternativeSum) {
         result = [sum, count];
       } else if (sum === alternativeSum) {
-        result = [sum, count + aleternativeCount];
+        result = [sum, count + alternativeCount];
       } else {
-        result = [alternativeSum, aleternativeCount];
+        result = [alternativeSum, alternativeCount];
       }
 
-      cache.set(key, result);
-      unvisited.add(u);
+      unvisitedBits |= 1n << u;
+      cache.set(unvisitedBits, result);
     }
     return result;
   };
@@ -68,6 +72,7 @@ export default (money, roads) => {
   for (let i = 0; i < N; i++) {
     unvisited.add(i);
   }
-  const result = f(unvisited);
+  const unvisitedKey = getKey(unvisited);
+  const result = f(unvisitedKey);
   return result;
 };
